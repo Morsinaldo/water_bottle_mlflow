@@ -1,0 +1,67 @@
+name: data_segregation
+conda_env: conda.yml
+
+entry_points:
+    main:
+        parameters:
+            project_name:
+                description: Name of the Weights and Biases project
+                type: str
+                default: water_bottle_classifier
+            artifact_name_feature:
+                description: Name of the Artifact with the clean data features
+                type: str
+                default: clean_features:latest
+            artifact_name_target:
+                description: Name of the Artifact with the clean data target
+                type: str
+                default: labels:latest
+            train_feature_artifact:
+                description: Name of the train features Artifact stored in WandB
+                type: str
+                default: train_x
+            train_target_artifact:
+                description: Name of the train labels Artifact stored in WandB
+                type: str
+                default: train_y
+            val_feature_artifact:
+                description: Name of the validation features Artifact stored in WandB
+                type: str
+                default: val_x
+            val_target_artifact:
+                description: Name of the validation labels Artifact stored in WandB
+                type: str
+                default: val_y
+            test_feature_artifact:
+                description: Name of the test features Artifact stored in WandB
+                type: str
+                default: test_x
+            test_target_artifact:
+                description: Name of the test labels Artifact stored in WandB
+                type: str
+                default: test_y
+            test_size:
+                description: Ratio of dataset used to test
+                type: float
+                default: 0.25
+            val_size:
+                description: Ratio of dataset used to val
+                type: float
+                default: 0.25
+            seed:
+                description: Integer to use to seed the random number generator
+                type: str
+                default: 42
+        command: >-
+            python .\run.py
+            # python .\run.py --project_name {project_name} \
+            #             --artifact_name_feature {artifact_name_feature} \
+            #             --artifact_name_target {artifact_name_target} \
+            #             --train_feature_artifact {train_feature_artifact} \
+            #             --train_target_artifact {train_target_artifact} \
+            #             --val_feature_artifact {val_feature_artifact} \
+            #             --val_target_artifact {val_target_artifact} \
+            #             --test_feature_artifact {test_feature_artifact} \
+            #             --test_target_artifact {test_target_artifact} \
+            #             --test_size {test_size} \
+            #             --val_size {val_size} \
