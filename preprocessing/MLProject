@@ -1,0 +1,20 @@
+name: preprocessing
+conda_env: conda.yml
+
+entry_points:
+    main:
+        parameters:
+            input_artifact:
+                description: Name of the Artifact that will store the raw data
+                type: str     
+            features:
+                description: Name of the artifact containing the clean features
+                type: str
+            target:
+                description: Name of the artifact containing the clean target
+                type: str
+
+        command: >-
+            python run.py --input_artifact {input_artifact} \
+                          --features {features} \
+                          --target {target}

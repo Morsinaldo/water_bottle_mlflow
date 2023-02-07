@@ -1,8 +1,12 @@
-import cv2
-import tensorflow as tf
-import numpy as np
+"""
+Creator: Morsinaldo Medeiros
+Date: 06-02-2023
+Description: This script contains the preprocessing classes.
+"""
+
 import os
-from tensorflow.keras.preprocessing.image import img_to_array
+import cv2
+import numpy as np
 
 class SimplePreprocessor:
     """ Simple Preprocessor class to resize the image to a fixed size ignoring the aspect ratio. """
@@ -17,17 +21,6 @@ class SimplePreprocessor:
 		# resize the image to a fixed size, ignoring the aspect
 		# ratio
         return cv2.resize(image, (self.width, self.height),interpolation=self.inter)
-
-class ImageToArrayPreprocessor:
-    """ ImageToArrayPreprocessor class to convert the image to a numpy array. """
-    def __init__(self, dataFormat=None):
-		# store the image data format
-        self.dataFormat = dataFormat
-        
-    def preprocess(self, image):
-		# apply the Keras utility function that correctly rearranges
-		# the dimensions of the image
-        return img_to_array(image, data_format=self.dataFormat)
 
 class SimpleDatasetLoader:
     """ SimpleDatasetLoader class to load the image dataset from disk and apply the preprocessors. """
@@ -74,4 +67,3 @@ class SimpleDatasetLoader:
 
             # return a tuple of the data and labels
         return (np.array(data), np.array(labels))
-

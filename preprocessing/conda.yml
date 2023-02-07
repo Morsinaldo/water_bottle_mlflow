@@ -1,0 +1,13 @@
+name: preprocessing
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - pip=22.3.1
+  - imutils=0.5.4
+  - joblib=1.1.1
+  - numpy=1.21.5
+  - pandas=1.2.3
+  - opencv=4.7.0
+  - pip:
+      - wandb
