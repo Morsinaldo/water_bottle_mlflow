@@ -1,0 +1,48 @@
+name: train
+conda_env: conda.yml
+
+entry_points:
+    main:
+        parameters:
+            train_feature_artifact:
+                description: Name of the artifact containing the training features
+                type: str
+            train_target_artifact:
+                description: Name of the artifact containing the training target
+                type: str
+            val_feature_artifact:
+                description: Name of the artifact containing the validation features
+                type: str
+            val_target_artifact:
+                description: Name of the artifact containing the validation target
+                type: str
+            encoder:
+                description: Name of the artifact containing the encoder
+                type: str
+            inference_model:
+                description: Name of the artifact containing the inference model
+                type: str
+            batch_size:
+                description: Batch size for the dataloader
+                type: int
+            seed:
+                description: Random Seed
+                type: int
+            epochs:
+                description: Number of epochs
+                type: int
+            learning_rate:
+                description: Learning rate
+                type: float
+        
+        command: >-
+            python run.py --train_feature_artifact {train_feature_artifact} \
+                          --train_target_artifact {train_target_artifact} \
+                          --val_feature_artifact {val_feature_artifact} \
+                          --val_target_artifact {val_target_artifact} \
+                          --encoder {encoder} \
+                          --inference_model {inference_model} \
+                          --batch_size {batch_size} \
+                          --seed {seed} \
+                          --epochs {epochs} \
+                          --learning_rate {learning_rate}
