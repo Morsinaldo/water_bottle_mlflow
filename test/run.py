@@ -1,28 +1,22 @@
+"""
+Creator: Morsinaldo Medeiros
+Date: 05-02-2023
+Description: This script is responsible for running the test step of the pipeline.
+"""
 import wandb
 import logging
 import joblib
-import numpy as np
+import argparse
 import matplotlib.pyplot as plt
 
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import ConfusionMatrixDisplay
 from sklearn.metrics import fbeta_score, precision_score, recall_score, accuracy_score
 
-import torch
 from torch.utils.data import DataLoader
-from torchvision import models
-from torch import nn
 
-from helpers import ImageDataset, MyVisionTransformerModel
-
-HYP = {
-        'seed': 44,
-        'batch_size': 50,
-        'img_size': (225,225),
-        'epochs': 50,
-        'patience': 5,
-        'learning_rate': 0.0001,
-    }
+from helpers.images_processing import ImageDataset
+from helpers.model import MyVisionTransformerModel
 
 # configure logging
 logging.basicConfig(level=logging.INFO,
@@ -32,103 +26,115 @@ logging.basicConfig(level=logging.INFO,
 # reference for a logging obj
 logger = logging.getLogger()
 
-args = {
-  "project_name": "water_bottle_classifier",
-  "test_feature_artifact": "test_x:latest",
-  "test_target_artifact": "test_y:latest",
-  "encoder": "target_encoder:latest",
-  "inference_model": "vit_l_32.pth:latest"
-}
+def process_args(args):
+    """
+    Arguments:
+        args - command line arguments
+        args.test_feature_artifact - name of the artifact containing the test features
+        args.test_target_artifact - name of the artifact containing the test target
+        args.encoder - name of the artifact containing the encoder
+        args.inference_model - name of the artifact containing the inference model
+        args.batch_size - batch size for the dataloader
+    """
 
-wandb.login()
+    wandb.login()
 
-# open the W&B project created in the Fetch step
-run = wandb.init(entity="morsinaldo",project=args["project_name"], job_type="Test")
+    # open the W&B project created in the Fetch step
+    run = wandb.init(job_type="Test")
 
-logger.info("Downloading the test data")
-# test x
-test_x_artifact = run.use_artifact(args["test_feature_artifact"])
-test_x_path = test_x_artifact.file()
+    logger.info("Downloading the test data")
+    # test x
+    test_x_artifact = run.use_artifact(args.test_feature_artifact)
+    test_x_path = test_x_artifact.file()
 
-# test y
-test_y_artifact = run.use_artifact(args["test_target_artifact"])
-test_y_path = test_y_artifact.file()
+    # test y
+    test_y_artifact = run.use_artifact(args.test_target_artifact)
+    test_y_path = test_y_artifact.file()
 
-# unpacking the artifacts
-test_x = joblib.load(test_x_path)
-test_y = joblib.load(test_y_path)
+    # unpacking the artifacts
+    test_x = joblib.load(test_x_path)
+    test_y = joblib.load(test_y_path)
 
-classes = {'Full  Water level': 0, 'Half water level': 1, 'Overflowing': 2}
-test_y = np.array([classes[i] for i in test_y])
+    # download the encoder
+    logger.info("Downloading the encoder")
+    encoder_artifact = run.use_artifact(args.encoder)
+    encoder_path = encoder_artifact.file()
+    encoder = joblib.load(encoder_path)
 
-test_dataset = ImageDataset(test_x, test_y)
-test_loader = DataLoader(test_dataset, batch_size=HYP['batch_size'], shuffle=False)
+    # download the inference model
+    logger.info("Downloading the inference model")
+    model_artifact = run.use_artifact(args.inference_model)
+    model_path = model_artifact.file()
 
-# load the model
-# model = models.vit_l_32(pretrained=False)
-# for param in model.parameters():
-#     param.requires_grad = False
+    # encoding the test target
+    logger.info("Encoding the test target")
+    test_y = encoder.transform(test_y)
+    
+    # create the test dataloader
+    logger.info("Creating the test dataloader")
+    test_dataset = ImageDataset(test_x, test_y)
+    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False)
 
-# model.heads.head = nn.Linear(1024, 3)
-# model.load_state_dict(torch.load('./vit_l_32.pth'))
+    model = MyVisionTransformerModel(len_encoding=len(encoder.classes_), logger=logger, pretrained=False)
+    model.load_model(model_path)
 
-# device = torch.device('cuda' if torch.cuda.is_available else 'cpu')
-# model.to(device)
+    test_predictions, test_labels = model.predict(test_loader)
 
-model = MyVisionTransformerModel(len_encoding=3, logger=logger, pretrained=False)
-model.load_model("./vit_l_32.pth")
+    plt.style.use("ggplot")
+    fig_confusion_matrix, ax = plt.subplots(1,1,figsize=(7,4))
+    ConfusionMatrixDisplay(confusion_matrix(test_predictions,
+                                            test_labels),
+                          display_labels=encoder.classes_).plot(values_format=".0f",ax=ax)
+    ax.set_xlabel("True Label")
+    ax.set_ylabel("Predicted Label")
+    ax.grid(False)
 
-# make predictions
-# test_predictions = []
-# test_labels = []
-# with torch.no_grad():
-#     for i, (t_images, t_labels) in enumerate(test_loader):
-#         t_images = t_images.to(device)
-#         t_labels = t_labels.to(device)
-#         outputs = model(t_images.float())
-#         _, predictions = torch.max(outputs, 1)
-#         predictions = predictions.to('cpu')
-#         t_labels = t_labels.to('cpu')
-#         test_predictions.append(predictions.numpy())
-#         test_labels.append(t_labels.numpy())
+    # log the confusion matrix
+    logger.info("Logging the confusion matrix")
+    run.log({"Confusion Matrix": wandb.Image(fig_confusion_matrix)})
 
-# test_predictions = np.hstack(test_predictions)
-# test_labels = np.hstack(test_labels)
+    # compute the metrics
+    logger.info("Test Evaluation metrics")
+    precision = precision_score(test_labels, test_predictions, average='macro')
+    recall = recall_score(test_labels, test_predictions, average='macro')
+    accuracy = accuracy_score(test_labels, test_predictions)
+    fbeta = fbeta_score(test_labels, test_predictions, beta=0.5, average='macro')
 
-test_predictions, test_labels = model.predict(test_loader)
+    # log the metrics
+    logger.info("Test Accuracy: {}".format(accuracy))
+    logger.info("Test Precision: {}".format(precision))
+    logger.info("Test Recall: {}".format(recall))
+    logger.info("Test F1: {}".format(fbeta))
 
-plt.style.use("ggplot")
-fig_confusion_matrix, ax = plt.subplots(1,1,figsize=(7,4))
-ConfusionMatrixDisplay(confusion_matrix(test_predictions,
-                                        test_labels),
-                       display_labels=classes).plot(values_format=".0f",ax=ax)
+    run.summary["Acc"] = accuracy
+    run.summary["Precision"] = precision
+    run.summary["Recall"] = recall
+    run.summary["F1"] = fbeta
 
-ax.set_xlabel("True Label")
-ax.set_ylabel("Predicted Label")
-ax.grid(False)
-# plt.show()
+    run.finish()
 
-# compute the metrics
-logger.info("Test Evaluation metrics")
-precision = precision_score(test_labels, test_predictions, average='macro')
-recall = recall_score(test_labels, test_predictions, average='macro')
-accuracy = accuracy_score(test_labels, test_predictions)
-fbeta = fbeta_score(test_labels, test_predictions, beta=0.5, average='macro')
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Test step of the pipeline")
 
-# log the metrics
-logger.info("Test Accuracy: {}".format(accuracy))
-logger.info("Test Precision: {}".format(precision))
-logger.info("Test Recall: {}".format(recall))
-logger.info("Test F1: {}".format(fbeta))
+    parser.add_argument("--test_feature_artifact", type=str, required=True,
+                        help="name of the artifact containing the test features")
+    parser.add_argument("--test_target_artifact", type=str, required=True,
+                        help="name of the artifact containing the test target")
+    parser.add_argument("--encoder", type=str, required=True,
+                        help="name of the artifact containing the encoder")
+    parser.add_argument("--inference_model", type=str, required=True,
+                        help="name of the artifact containing the inference model")
+    parser.add_argument("--batch_size", type=int, required=True,
+                        help="batch size for the dataloader")
 
-run.summary["Acc"] = accuracy
-run.summary["Precision"] = precision
-run.summary["Recall"] = recall
-run.summary["F1"] = fbeta
+    ARGS = parser.parse_args()
 
-# log the confusion matrix
-logger.info("Logging the confusion matrix")
-run.log({"Confusion Matrix": wandb.Image(fig_confusion_matrix)})
+    process_args(ARGS)
 
-run.finish()
-
+# run the script
+    # mlflow run . -P project_name=water_bottle_classifier \
+    #               -P test_feature_artifact=test_x:latest \
+    #               -P test_target_artifact=test_y:latest \
+    #               -P encoder=target_encoder:latest \
+    #               -P inference_model=vit_l_32.pth:latest \
+    #               -P batch_size=50

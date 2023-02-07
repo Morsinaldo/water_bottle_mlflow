@@ -1,0 +1,28 @@
+name: test
+conda_env: conda.yml
+
+entry_points:
+    main:
+        parameters:
+            test_feature_artifact:
+                description: Name of the artifact containing the test features
+                type: str
+            test_target_artifact:
+                description: Name of the artifact containing the test target
+                type: str
+            encoder:
+                description: Name of the artifact containing the encoder
+                type: str
+            inference_model:
+                description: Name of the artifact containing the inference model
+                type: str
+            batch_size:
+                description: Batch size for the dataloader
+                type: int
+        
+        command: >-
+            python run.py --test_feature_artifact {test_feature_artifact} \
+                          --test_target_artifact {test_target_artifact} \
+                          --encoder {encoder} \
+                          --inference_model {inference_model} \
+                          --batch_size {batch_size}
