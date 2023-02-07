@@ -1,0 +1,21 @@
+name: fetch_data
+conda_env: conda.yml
+
+entry_points:
+    main:
+        parameters:
+            artifact_name:
+                description: Name of the Artifact that will store the raw data
+                type: str
+            dataset:
+                description: Name of the dataset that will be downloaded
+                type: str
+            url:
+                description: url that from the dataset will be downloaded
+                type: str
+
+        command: >-
+            python run.py --artifact_name {artifact_name} \
+                          --dataset {dataset} \
+                          --url {url}
+        

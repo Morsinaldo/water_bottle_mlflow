@@ -1,0 +1,12 @@
+name: fetch_data
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - pip=22.3.1
+  - imutils=0.5.4
+  - pip:
+      - wandb
+      - protobuf==3.20.1
+      - gdown==4.6.0
+      - zipfile36
