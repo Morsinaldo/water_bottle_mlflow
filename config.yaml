@@ -1,0 +1,26 @@
+main:
+  project_name: water_bottle_classifier
+  experiment_name: dev
+  execute_steps:
+    - fetch_data
+    - preprocessing
+    - data_segregation
+    - train
+    - test
+  # This seed will be used to seed the random number generator
+  # to ensure repeatibility of the data splits and other
+  # pseudo-random operations
+  random_seed: 44
+data:
+  artifact_name: "raw_data.csv"
+  dataset: "data"
+  file_url: "https://drive.google.com/uc?id=1hb9P1KVMcMBLHhJKKU-_FWX_g7uHb74A"
+  # Threshold for Kolomorov-Smirnov test
+  test_size: 0.25
+  val_size: 0.25
+model:
+  vision_transformer:
+    batch_size: 50
+    epochs: 2
+    learning_rate: 0.0001
+  export_artifact: "model_export"
