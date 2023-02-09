@@ -5,7 +5,7 @@ Description: This script contains the model class.
 """
 import numpy as np
 import torch
-from torchvision import models
+from torchvision import models, transforms
 
 class MyVisionTransformerModel():
     """ MyVisionTransformerModel class to load the model and predict the image. """
@@ -28,12 +28,6 @@ class MyVisionTransformerModel():
             self.device = torch.device('cpu')
         self.model.to(self.device)
 
-    def parameters(self):
-        return self.model.parameters()
-
-    def state_dict(self):
-        return self.model.state_dict()
-    
     def load_model(self, model_path):
         self.logger.info(f"Loading model from {model_path}")
         self.model.load_state_dict(torch.load(model_path, map_location=self.device))
@@ -104,3 +98,17 @@ class MyVisionTransformerModel():
         test_predictions = np.hstack(test_predictions)
         test_labels = np.hstack(test_labels)
         return test_predictions, test_labels
+
+    def predict_image(self, image):
+        self.logger.info("Predicting image")
+        self.model.eval()
+        transform = transforms.Compose([transforms.ToTensor(),
+                                        transforms.Resize((224, 224)),])
+        image = transform(image)
+        image = image.unsqueeze(0)
+        image = image.to(self.device)
+        with torch.no_grad():
+            outputs = self.model(image.float())
+            _, predictions = torch.max(outputs, 1)
+            predictions = predictions.to('cpu')
+        return predictions
