@@ -186,4 +186,5 @@ This material is based on lectures by Professor Ivanovitch Silva [1] and the boo
 ## Reference
 
 [1] Ivanovitch Silva Github. Available at: https://github.com/ivanovitchm/mlops - Accessed February 12, 2023.
+
 [2] Practical MLOps. Available at: https://www.oreilly.com/library/view/practical-mlops/9781098103002/ - Accessed February 12, 2023.
