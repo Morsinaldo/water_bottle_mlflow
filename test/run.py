@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import ConfusionMatrixDisplay
-from sklearn.metrics import fbeta_score, precision_score, recall_score, accuracy_score
+from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
 
 from torch.utils.data import DataLoader
 
@@ -95,16 +95,16 @@ def process_args(args):
 
     # compute the metrics
     logger.info("Test Evaluation metrics")
-    precision = precision_score(test_labels, test_predictions, average='macro')
-    recall = recall_score(test_labels, test_predictions, average='macro')
+    precision = precision_score(test_labels, test_predictions, average='weighted')
+    recall = recall_score(test_labels, test_predictions, average='weighted')
     accuracy = accuracy_score(test_labels, test_predictions)
-    fbeta = fbeta_score(test_labels, test_predictions, beta=0.5, average='macro')
+    f1 = f1_score(test_labels, test_predictions, beta=0.5, average='weighted')
 
     # log the metrics
     logger.info("Test Accuracy: {}".format(accuracy))
     logger.info("Test Precision: {}".format(precision))
     logger.info("Test Recall: {}".format(recall))
-    logger.info("Test F1: {}".format(fbeta))
+    logger.info("Test F1: {}".format(f1))
 
     run.summary["Acc"] = accuracy
     run.summary["Precision"] = precision
