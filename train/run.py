@@ -11,10 +11,12 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 
+from codecarbon import EmissionsTracker
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import ConfusionMatrixDisplay
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.class_weight import compute_class_weight
+from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
 
 import torch
 from torch.utils.data import DataLoader
@@ -114,7 +116,13 @@ def process_args(args):
     criterion = nn.CrossEntropyLoss(weight=torch.from_numpy(class_weights.astype(np.float32)).to(model.device))
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
 
+    # create codecarbon tracker
+    tracker = EmissionsTracker(log_level="critical")
+    tracker.start()
+
     history = model.train(train_loader, test_loader, criterion, optimizer, total_steps, args.epochs)
+
+    emissions = tracker.stop()
 
     test_predictions, test_labels = model.predict(test_loader)
 
@@ -127,12 +135,16 @@ def process_args(args):
     ax.set_ylabel("Predicted Label")
     ax.grid(False)
 
-    # plot the training and validation loss
+    # plot the training and validation loss and accuracy
+    plt.style.use("ggplot")
     fig_loss, ax = plt.subplots(1,1,figsize=(7,4))
-    ax.plot(history['train_loss'], label='train')
-    ax.plot(history['val_loss'], label='validation')
-    ax.set_xlabel("Epoch")
-    ax.set_ylabel("Loss")
+    ax.plot(history['train_acc'], label='train_acc')
+    ax.plot(history['train_loss'], label='train_loss', linestyle='--')
+    ax.plot(history['val_acc'], label='val_acc')
+    ax.plot(history['val_loss'], label='val_loss', linestyle='--')
+    ax.set_title("Training Loss and Accuracy")
+    ax.set_xlabel("Epoch #")
+    ax.set_ylabel("Loss/Accuracy")
     ax.legend()
 
     fig_confusion_matrix.savefig("confusion_matrix.png")
@@ -159,35 +171,39 @@ def process_args(args):
         {
             "confusion_matrix": wandb.Image(fig_confusion_matrix),
             "loss": wandb.Image(fig_loss),
-
             # "other_figure": wandb.Image(other_fig)
         }
     )
 
-    # # send the confusion matrix and loss plot to wandb
-    # logger.info("Saving the confusion matrix and loss plot")
-    # wandb.log_artifact(wandb.Image(fig_confusion_matrix, caption="Confusion Matrix"))
-    # wandb.log_artifact(wandb.Image(fig_loss, caption="Loss"))
+    # log the metrics
+    logger.info("Logging metrics")
+    run.log({"train_loss": history['train_loss'][-1],
+                "val_loss": history['val_loss'][-1],
+                "train_acc": history['train_acc'][-1],
+                "val_acc": history['val_acc'][-1],
+                "emissions": emissions
+                })
+    
+    precision = precision_score(test_predictions, test_labels, average='weighted')
+    recall = recall_score(test_predictions, test_labels, average='weighted')
+    f1 = f1_score(test_predictions, test_labels, average='weighted')
+    accuracy = accuracy_score(test_predictions, test_labels)
 
-    # # send the training and validation loss figures to wandb
-    # wandb.log({"train_loss": wandb.Image(fig_loss, caption="Train Loss")})
-    # wandb.log({"val_loss": wandb.Image(fig_loss, caption="Validation Loss")})
+    run.summary["precision"] = precision
+    run.summary["recall"] = recall
+    run.summary["f1"] = f1
+    run.summary["accuracy"] = accuracy
+
+    # energy unit is kWh
+    run.summary["Energy_Consumed"] = tracker.final_emissions_data.energy_consumed
+    run.summary["Energy_RAM"] = tracker.final_emissions_data.ram_energy
+    run.summary["Energy_GPU"] = tracker.final_emissions_data.gpu_energy
+    run.summary["Energy_CPU"] = tracker.final_emissions_data.cpu_energy
+    # kg
+    run.summary["CO2_Emissions"] = tracker.final_emissions_data.emissions
 
     run.finish()
 
-# args = {
-#   "project_name": "water_bottle_classifier",
-#   "train_feature_artifact": "train_x:latest",
-#   "train_target_artifact": "train_y:latest",
-#   "val_feature_artifact": "val_x:latest",
-#   "val_target_artifact": "val_y:latest",
-#   "encoder": "target_encoder",
-#   "inference_model": "vit_l_32.pth",
-#   'seed': 44,
-#   'batch_size': 50,
-#   'epochs': 50,
-#   'learning_rate': 0.0001,
-# }
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

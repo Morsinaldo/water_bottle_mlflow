@@ -31,6 +31,12 @@ class MyVisionTransformerModel():
         self.logger.info(f"Loading model from {model_path}")
         self.model.load_state_dict(torch.load(model_path, map_location=self.device))
 
+    def parameters(self):
+        return self.model.parameters()
+
+    def state_dict(self):
+        return self.model.state_dict()
+
     def train(self, train_loader, test_loader, criterion, optimizer, total_steps, epochs=20):
         
         history = {
