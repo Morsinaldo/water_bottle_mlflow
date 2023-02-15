@@ -3,6 +3,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - python=3.9.16
   - pip=22.3.1
   - joblib=1.1.1
   - numpy=1.21.5
@@ -12,4 +13,4 @@ dependencies:
   - torchvision=0.14.1
   - pip:
       - wandb
-      - codecarbon=2.1.4
+      - codecarbon==2.1.4
