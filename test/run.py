@@ -98,7 +98,7 @@ def process_args(args):
     precision = precision_score(test_labels, test_predictions, average='weighted')
     recall = recall_score(test_labels, test_predictions, average='weighted')
     accuracy = accuracy_score(test_labels, test_predictions)
-    f1 = f1_score(test_labels, test_predictions, beta=0.5, average='weighted')
+    f1 = f1_score(test_labels, test_predictions, average='weighted')
 
     # log the metrics
     logger.info("Test Accuracy: {}".format(accuracy))
@@ -109,7 +109,7 @@ def process_args(args):
     run.summary["Acc"] = accuracy
     run.summary["Precision"] = precision
     run.summary["Recall"] = recall
-    run.summary["F1"] = fbeta
+    run.summary["F1"] = f1
 
     run.finish()
 
@@ -130,11 +130,3 @@ if __name__ == "__main__":
     ARGS = parser.parse_args()
 
     process_args(ARGS)
-
-# run the script
-    # mlflow run . -P project_name=water_bottle_classifier \
-    #               -P test_feature_artifact=test_x:latest \
-    #               -P test_target_artifact=test_y:latest \
-    #               -P encoder=target_encoder:latest \
-    #               -P inference_model=vit_l_32.pth:latest \
-    #               -P batch_size=50
