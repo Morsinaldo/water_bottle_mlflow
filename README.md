@@ -111,7 +111,11 @@ mlflow run . -P hydra_options="main.execute_steps='train'"
 ```
 __Note__: Run mlflow commands in the project's root folder.
 
-The output of this component generates the fine tuned model for our project's task and the encoder of the target variable. In this case I used only the `LabelEncoder`, but if you look at the logs of this step you will notice that it is giving a higher weight to the Overflowing class. I encourage you to try using a different encoder than mine to try to improve the model results and also to use a different pre-trained model. Finally, over 50 epochs, the following result was obtained:
+The output of this component generates the fine tuned model for our project's task and the encoder of the target variable. In this case I used only the `LabelEncoder`, but if you look at the logs of this step you will notice that it is giving a higher weight to the Overflowing class. I encourage you to try using a different encoder than mine to try to improve the model results and also to use a different pre-trained model.
+
+
+:pushpin: __Important__ : It is important to mention that the training environment is not supporting installation of the libraries needed to run on the GPU yet, because of a bug in the .yml file build. However, once the environment is created, you can activate it and perform the installation. For more details please visit the Pytorch website. I hope to be able to fix this in future updates.
+
 
 ### Test
 
@@ -137,16 +141,12 @@ mlflow run . -P hydra_options="main.execute_steps='fetch_data,preprocessing,data
 ```
 
 ## :chart_with_upwards_trend: Model Performance
+
 Figures 5 and 6 show, respectively, the confusion matrix and the plot of accuracy and error over the training stage epochs. With this, it can be seen that the model predicted too much of the Full water bottle class when it was actually Half water bottle. A possible future improvement would be to balance the number of class images with the increased data and try using other machine learning models. 
 
 <p align='center'>
-    <img src='./train/confusion_matrix.png'>
+    <img src='./train/confusion_matrix.png' width=100%>
     Figure 5: Training Confusion Matrix.
-</p>
-
-<p align='center'>
-    <img src='./train/loss.png'>
-    Figure 6: Training Loss and Accuracy.
 </p>
 
 Training Metrics [burning-chocolate-56](https://wandb.ai/morsinaldo/water_bottle_classifier/runs/bjjr9omd?workspace=user-morsinaldo):
@@ -154,6 +154,11 @@ Training Metrics [burning-chocolate-56](https://wandb.ai/morsinaldo/water_bottle
 - Train Loss: 0.4867
 - Validation Accuracy: 0.7912
 - Validation Loss: 0.4867
+
+<p align='center'>
+    <img src='./train/loss.png' width=100%>
+    Figure 6: Training Loss and Accuracy.
+</p>
 
 Figure 7 shows the confusion matrix of the test base, and further down you can check the metrics for accuracy, precision, recall, and F1-Score. The accuracy of the test base was about 77%, which is reasonable, but we can improve it a lot in future updates. 
 
