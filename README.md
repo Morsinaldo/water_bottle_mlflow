@@ -1,6 +1,6 @@
 # Water Bottle Classification with MLFlow
 
-## Introduction
+## :rocket: Introduction
 
 Notebooks are very popular in data science and machine learning, especially when we are performing exploratory data analysis and when we want to check the output of each cell of code. However, if we want to go beyond automating our processes using MLOps best practices, it is ideal to create a pipeline using scripts and not notebooks. Tools such as MLFlow and Hydra assist in this automation process, and with this in mind, this project aims to show a simple example of using these tools.
 
@@ -11,7 +11,7 @@ Notebooks are very popular in data science and machine learning, especially when
 
 For more details about MLFlow, specifically, you can read my article on Medium on this link: . In this repository you will find details on how to reproduce this project and get the same results.
 
-## The problem
+## :mag_right: The problem
 
 The dataset used for training the model can be found on [Kaggle](https://www.kaggle.com/datasets/chethuhn/water-bottle-dataset) and contains 486 images divided into three classes:
 
@@ -28,7 +28,7 @@ Figure 2 shows some images from the dataset.
 
 So, this project aims to be more of a didactic example of MLFlow usage than a solution to a specific problem in the real world, but if we use our imagination, we can find some applications. For example, imagine a production line of a company that sells bottles of soda, water, alcoholic beverages, etc., and this company wants to put hardware with a model implemented that classifies each bottle that leaves the production line and, at the end of a certain period, generates a report with the classifications obtained. This would be very useful for this company, given the thousands of bottles the machine produces per day.
 
-## How to execute
+## :computer: How to execute
 
 To execute the MLFlow pipeline, you can follow the steps below:
 
@@ -136,16 +136,44 @@ To execute all steps in pipeline
 mlflow run . -P hydra_options="main.execute_steps='fetch_data,preprocessing,data_segregation,train,test'"
 ```
 
-## Model Performance
-Figures 5 and 6 show, respectively, the confusion matrix of the training and testing stages, as well as the metrics of accuracy, recall, F1-Score and precision. With this, it can be seen that the model predicted too much of the Full water bottle class when it was actually Half water bottle. A possible future improvement would be to balance the number of class images with data augmentation and try using other machine learning models. The validation accuracy was around 85%, which is good, but we can improve it in future updates.
+## :chart_with_upwards_trend: Model Performance
+Figures 5 and 6 show, respectively, the confusion matrix and the plot of accuracy and error over the training stage epochs. With this, it can be seen that the model predicted too much of the Full water bottle class when it was actually Half water bottle. A possible future improvement would be to balance the number of class images with the increased data and try using other machine learning models. 
 
+<p align='center'>
+    <img src='./train/confusion_matrix.png'>
+    Figure 5: Training Confusion Matrix.
+</p>
 
-## Deploy using Streamlit
+<p align='center'>
+    <img src='./train/loss.png'>
+    Figure 6: Training Loss and Accuracy.
+</p>
+
+Training Metrics [burning-chocolate-56](https://wandb.ai/morsinaldo/water_bottle_classifier/runs/bjjr9omd?workspace=user-morsinaldo):
+- Train Accuracy: 0.76
+- Train Loss: 0.4867
+- Validation Accuracy: 0.7912
+- Validation Loss: 0.4867
+
+Figure 7 shows the confusion matrix of the test base, and further down you can check the metrics for accuracy, precision, recall, and F1-Score. The accuracy of the test base was about 77%, which is reasonable, but we can improve it a lot in future updates. 
+
+<p align='center'>
+    <img src='./test/confusion_matrix.png'>
+    Figure 7: Test Confusion Matrix.
+</p>
+
+Test Metrics [attractive-quiver-60](https://wandb.ai/morsinaldo/water_bottle_classifier/runs/piycb6qc?workspace=user-morsinaldo): 
+- Test Accuracy: 0.77049
+- Test Precision: 0.79535
+- Test Recall: 0.77049
+- Test F1: 0.77936
+
+## :earth_americas: Deploy using Streamlit
 In addition to MLFlow, a small application was made using Streamlit to symbolize the model in production. That is, given that the model has been trained, how can I use it to make predictions?
 
 <p align='center'>
     <img src='./images/app_workflow.png'>
-    Figure 7: Streamlit application.
+    Figure 8: Streamlit application.
 </p>
 
 __9__ - Enter in [app](./app/) folder and create the `app_env` environment with the `conda.yml` file using the following command:
@@ -159,31 +187,29 @@ __10__ - To start the application, run the following command with the `app_env` 
 streamlit run ./app.py
 ```
 
-This will open a new tab in your browser with the format shown in figure 8:
+This will open a new tab in your browser with the format shown in figure 9:
 
 <p align='center'>
     <img src='./images/app_1.png'>
-    Figure 8: Streamlit application.
+    Figure 9: Streamlit application.
 </p>
 
-To perform a prediction, upload an image and click on the `predict` button, as shown in figure 9. The application will download the model and encoder stored in Weights and Biases, make the prediction and display the result just below.
+To perform a prediction, upload an image and click on the `predict` button, as shown in figure 10. The application will download the model and encoder stored in Weights and Biases, make the prediction and display the result just below.
 
 <p align='center'>
     <img src='./images/app_2.png'>
-    Figure 9: Streamlit application with image prediction.
+    Figure 10: Streamlit application with image prediction.
 </p>
 
-## Environmental Considerations
+## :leaves: Environmental Considerations
 
-Given the environmental concerns raised in recent years because of the emission of CO2 into the atmosphere, a library named codecarbon was used to measure the amount of energy spent and the amount of CO2 released for the training of a neural network. As neural networks require a large computational cost, mainly GPU, the library was used to measure how much CO2 was released into the atmosphere and how much energy was spent during training and hyperparameter tuning.
+Given the environmental concerns raised in recent years because of the emission of CO2 into the atmosphere, a library named codecarbon was used to measure the amount of energy spent and the amount of CO2 released for the training of a neural network. As neural networks require a large computational cost, mainly GPU, the library was used to measure how much CO2 was released into the atmosphere and how much energy was spent during training .
 
-Running without sweep (one CNN model)
-
-- Energy consumed: 0.00087 kWh
-- CO² emission: 0.00019 kg
+- Energy consumed: 0.04285 kWh
+- CO² emission: 0.005274 kg
 
 This material is based on lectures by Professor Ivanovitch Silva [1] and the book Practical MLOps [2].
-## Reference
+## :books: Reference
 
 [1] Ivanovitch Silva Github. Available at: https://github.com/ivanovitchm/mlops - Accessed February 12, 2023.
 
