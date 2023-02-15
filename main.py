@@ -40,8 +40,8 @@ def process_args(config: DictConfig):
             "main",
             parameters={
                 "input_artifact": "raw_data.csv:latest",
-                "features": "clean_features:v2",
-                "target": "labels:v1"
+                "features": "clean_features:latest",
+                "target": "labels:latest"
             }
         )
 
