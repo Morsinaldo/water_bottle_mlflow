@@ -9,7 +9,7 @@ Notebooks are very popular in data science and machine learning, especially when
     Figure 1: Model card.
 </p>
 
-For more details about MLFlow, specifically, you can read my article on Medium on this link: . In this repository you will find details on how to reproduce this project and get the same results.
+For more details about MLFlow, specifically, you can read my article on Medium on this link: https://medium.com/@morsinaldo.medeiros.075/from-notebooks-to-scripts-28332f3e93d9. In this repository you will find details on how to reproduce this project and get the same results. Also, you can check my video about the application: https://www.loom.com/share/857ea77395c24f99a95877bd94ba8bf9
 
 ## :mag_right: The problem
 
